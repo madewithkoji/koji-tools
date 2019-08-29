@@ -1,3 +1,5 @@
+# DEPRECATION WARNING: Please use [@withkoji/vcc](https://github.com/madewithkoji/koji-vcc)
+
 ## @withkoji/vcc
 
 This package will 
