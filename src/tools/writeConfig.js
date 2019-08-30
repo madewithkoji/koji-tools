@@ -1,35 +1,31 @@
 import fs from 'fs';
-import readDirectory from './readDirectory';
-import findRootDirectory from './findRootDirectory';
+import fsService from './fs.service';
 
-const writeConfig = () => {
+export default function writeConfig() {
   const projectConfig = {};
-  const root = findRootDirectory();
 
   // Add config items from koji json files
-  readDirectory(root)
-    .filter((path) => (path.endsWith('koji.json') || path.includes('.koji')) && !path.includes('.koji-resources'))
-    .forEach((path) => {
-      try {
-        const file = JSON.parse(fs.readFileSync(path, 'utf8'));
+  fsService.kojiConfigFiles.forEach((path) => {
+    try {
+      const file = JSON.parse(fs.readFileSync(path, 'utf8'));
 
-        Object.keys(file).forEach((key) => {
-          // If the key already exists in the project config, use it
-          if (projectConfig[key]) {
-            if (Array.isArray(projectConfig[key]) && Array.isArray(file[key])) {
-              projectConfig[key] = projectConfig[key].concat(file[key]);
-            } else {
-              projectConfig[key] = Object.assign(projectConfig[key], file[key]);
-            }
+      Object.keys(file).forEach((key) => {
+        // If the key already exists in the project config, use it
+        if (projectConfig[key]) {
+          if (Array.isArray(projectConfig[key]) && Array.isArray(file[key])) {
+            projectConfig[key] = projectConfig[key].concat(file[key]);
           } else {
-            // Otherwise, set it
-            projectConfig[key] = file[key];
+            projectConfig[key] = Object.assign(projectConfig[key], file[key]);
           }
-        });
-      } catch (err) {
-        //
-      }
-    });
+        } else {
+          // Otherwise, set it
+          projectConfig[key] = file[key];
+        }
+      });
+    } catch (err) {
+      //
+    }
+  });
 
   // Expose the serviceMap based on environment variables
   projectConfig.serviceMap = Object.keys(process.env).reduce((acc, cur) => {
@@ -48,6 +44,4 @@ const writeConfig = () => {
   } catch (err) {
     //
   }
-};
-
-export default writeConfig;
+}
